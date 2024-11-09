@@ -19,9 +19,9 @@ import { AuthGuard } from 'src/guards/auth.guard';
     schema: RefreshTokenSchema
   }
   ])
-  
+
   ],
   controllers: [AuthController],
-  providers: [AuthService ,AuthGuard ,JwtService]
+  providers: [AuthService, AuthGuard]
 })
 export class AuthModule { }

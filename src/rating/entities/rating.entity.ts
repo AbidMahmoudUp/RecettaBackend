@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, Types } from "mongoose";
 import { Plat } from "src/plat/entities/plat.entity";
-import { User } from "src/user/entities/user.entity";
+import { User } from "src/auth/schemas/user.schema";
 
 export type ratingDoc = HydratedDocument<Rating>
 
