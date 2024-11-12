@@ -12,8 +12,8 @@ export class Inventory {
     @Prop({type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true})
     user : User
 
-    @Prop([{ingrediant: {type: mongoose.Schema.Types.ObjectId, ref : "Ingrediant"}, qte: {type: Number, required : true}, _id: false}])
-    ingrediants: [{ingrediant: Ingrediant, qte : number}]
+    @Prop([{ingrediant: {type: mongoose.Schema.Types.ObjectId, ref : "Ingrediant"}, qte: {type: Number, required : true},date: {type : String, default:new Date().toLocaleString() } ,_id: false}])
+    ingrediants: [{ingrediant: Ingrediant, qte : number , date: string }]
 
 
 }
