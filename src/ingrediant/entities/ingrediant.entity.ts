@@ -9,7 +9,8 @@ export class Ingrediant {
 
     @Prop({unique : true})
     name : string
-
+    @Prop()
+    categorie : string 
     @Prop()
     image : string
 
