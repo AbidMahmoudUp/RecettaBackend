@@ -16,7 +16,7 @@ export class AppController {
        description: 'Json structure for user object',
     })
   @Post("api/generative-ia")
-  async getIngrediants(@Body() body: PromptDto )
+  async getIngredients(@Body() body: PromptDto )
   {
     return await this.appService.getPromptResponse(body.prompt)
   }

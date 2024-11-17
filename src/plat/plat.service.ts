@@ -15,14 +15,19 @@ export class PlatService {
   }
 
   async findAll() {
-    return await this.model.find().populate({
-      path: "ingrediants.ingrediant",
-      model: "Ingrediant"
-    }).exec()
+    const plats = await this.model.find().populate({
+      path: "ingredients.ingredient",
+      model: "Ingredient",
+    }).exec();
+  
+    console.log("Populated Plats:", JSON.stringify(plats, null, 2));
+    return plats;
   }
-
   async findOne(id: string) {
-    return await this.model.findById(id)
+    return await this.model.findById(id).populate({
+      path: "ingredients.ingredient",
+      model: "Ingredient",
+    }).exec()
   }
 
   async update(id: string, updatePlatDto: UpdatePlatDto) {

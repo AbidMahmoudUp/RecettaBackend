@@ -1,5 +1,5 @@
 import { IsNotEmpty } from "class-validator"
-import { Ingrediant } from "src/ingrediant/entities/ingrediant.entity"
+import { Ingredient } from "src/ingrediant/entities/ingredient.entity"
 import { User } from "src/auth/schemas/user.schema"
 import { ApiProperty } from "@nestjs/swagger"
 
@@ -12,11 +12,11 @@ export class CreateInventoryDto {
     user :User
 
     @ApiProperty({
-        example: "[{ingrediant: ObjectId, qte : 10}]",
+        example: "[{ingredient: ObjectId, qte : 10}]",
         required: true
     })
     @IsNotEmpty()
-    ingrediants: [{ingrediant: Ingrediant, qte : number}]
+    ingredients: [{ingredient: Ingredient, qte : number}]
 
 
 }

@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsString } from "class-validator"
 import { Types } from "mongoose"
-import { Ingrediant } from "src/ingrediant/entities/ingrediant.entity"
+import { Ingredient } from "src/ingrediant/entities/ingredient.entity"
 
 export class CreatePlatDto {
 
@@ -13,12 +13,25 @@ export class CreatePlatDto {
     )
     @IsString()
     name: string
-
+    @IsString()
+    title: string
+    @IsString()
+    description: string
+    @IsString()
+    imageRecipe: string
+    @IsString()
+    category :string
+    @IsString()
+    cookingTime: string
+    @IsString()
+    energy: string
+    @IsString()
+    rating : string
     @ApiProperty({
-        example: "[{ingrediant: ObjectId, qte : 10}]",
+        example: "[{ingredient: ObjectId, qte : 10}]",
         required: true
     })
     @IsNotEmpty()
-    ingrediants: [{ingrediant: Ingrediant, qte : number}]
+    ingredients: [{ingredient: Ingredient, qte : number}]
 
 }

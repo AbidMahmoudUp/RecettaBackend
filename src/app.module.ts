@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { IngrediantModule } from './ingrediant/ingrediant.module';
+import { IngredientModule } from './ingrediant/ingredient.module';
 import { PlatModule } from './plat/plat.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { RatingModule } from './rating/rating.module';
@@ -11,6 +11,9 @@ import { MongodbConfigService } from './config/mongodb.config.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfig } from './config/jwt.config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -20,20 +23,24 @@ import { JwtConfig } from './config/jwt.config';
       global: true,
       inject: [ConfigService],
     }),
-
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'assets'), 
+      serveRoot: '/uploads', 
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
       cache: true,
     }), AuthModule,
-    IngrediantModule,
+    IngredientModule,
     PlatModule,
     InventoryModule,
     RatingModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useClass: MongodbConfigService,
-    })],
+    }),
+    FileUploadModule],
 
   controllers: [AppController],
   providers: [AppService],
