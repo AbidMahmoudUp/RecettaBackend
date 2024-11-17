@@ -3,6 +3,13 @@ import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { response } from 'express';
+
+
+export class PromptTest
+{
+  pathImage: string
+}
 
 @Controller('api/inventory')
 export class InventoryController {
@@ -56,4 +63,28 @@ export class InventoryController {
   async remove(@Param('id') id: string) {
     return await this.inventoryService.remove(id);
   }
+
+
+  @Patch("/addIngredients/:id")
+  async addIngredientsToInventory(@Param('id') id : string,@Body()updateInventoryDto : UpdateInventoryDto)
+  {
+    return await this.inventoryService.updateByAddingIngredients(id, updateInventoryDto)
+  }
+
+  @Patch("/substractIngredients/:id")
+  async substractIngredientsToInventory(@Param('id') id : string,@Body()updateInventoryDto : UpdateInventoryDto)
+  {
+    return await this.inventoryService.updateByMakingRecipes(id, updateInventoryDto)
+  }
+
+
+
+
+  @Post("/imageTest")
+  async getImage(@Body()promptTest: PromptTest)
+  {
+    console.log(promptTest.pathImage)
+    return await response.sendFile(promptTest.pathImage)
+  }
 }
+

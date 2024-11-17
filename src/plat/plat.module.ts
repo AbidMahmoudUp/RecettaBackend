@@ -16,5 +16,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 )],
   controllers: [PlatController],
   providers: [PlatService],
+  exports: [MongooseModule]
 })
 export class PlatModule {}

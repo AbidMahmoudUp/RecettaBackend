@@ -1,22 +1,34 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, Types } from "mongoose";
-import { Ingrediant } from "src/ingrediant/entities/ingrediant.entity";
+import { Ingredient } from "src/ingrediant/entities/ingredient.entity";
 
 export type platDoc = HydratedDocument<Plat>
 
 @Schema({versionKey : false})
 export class Plat {
 
-     id : string
+     @Prop()
      title: string
+     @Prop()
      description: string
-     imageRes: number
+     @Prop()
+     image: string
+     @Prop()
      category :string
+     @Prop()
      cookingTime: string
+     @Prop()
      energy: string
+     @Prop()
      rating : string
-    @Prop([{ingrediant : {type: mongoose.Schema.Types.ObjectId, ref : "Ingrediant"}, qte: {type: Number, required : true}, _id: false}])
-    ingrediants: [{ingrediant: Ingrediant, qte : number}]
+     @Prop([
+        {
+          ingredient: { type: mongoose.Schema.Types.ObjectId, ref: "Ingredient" },
+          qte: { type: Number, required: true },
+          _id: false,
+        },
+      ])
+      ingredients: [{ ingredient: Ingredient; qte: number }];
 }
 
 export const platSchema = SchemaFactory.createForClass(Plat)

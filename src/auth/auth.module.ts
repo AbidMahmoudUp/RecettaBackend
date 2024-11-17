@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtConfig } from 'src/config/jwt.config';
 import { RefreshToken, RefreshTokenSchema } from './schemas/refresh-token.schemas';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schemas';
+import { MailService } from './services/mail.service';
+import { GeneratedCode, generatedCodeSchema } from './schemas/code-generated.schemas';
 
 @Module({
   imports: [MongooseModule.forFeature([{
@@ -17,11 +20,22 @@ import { AuthGuard } from 'src/guards/auth.guard';
   {
     name: RefreshToken.name,
     schema: RefreshTokenSchema
+  },
+  {
+    name: ResetToken.name,
+    schema: ResetTokenSchema
+  },
+  {
+    name: GeneratedCode.name,
+    schema: generatedCodeSchema
   }
-  ])
+  
+  ]),
+
 
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard]
+  providers: [AuthService, AuthGuard , MailService],
+  exports: [MongooseModule]
 })
 export class AuthModule { }
