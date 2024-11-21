@@ -26,6 +26,8 @@ export class AuthService {
 
 
     async signUp(signupData: SignupDto) {
+        signupData.email = signupData.email.trimEnd().trimStart()
+        signupData.email = signupData.email.toLowerCase()
         const { name, age, phone, email, password } = signupData;
 
         const emailInUse = await this.userModel.findOne({
@@ -49,7 +51,10 @@ export class AuthService {
     }
 
     async login(loginCredentials: LoginDto) {
+        loginCredentials.email = loginCredentials.email.trimEnd().trimStart()
+        loginCredentials.email = loginCredentials.email.toLowerCase()
         const { email, password } = loginCredentials;
+        
         const user = await this.userModel.findOne({ email });
         if (!user) {
             throw new UnauthorizedException("Wrong credentials");
