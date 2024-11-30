@@ -37,5 +37,6 @@ import { GeneratedCode, generatedCodeSchema } from './schemas/code-generated.sch
   controllers: [AuthController],
   providers: [AuthService, AuthGuard , MailService],
   exports: [MongooseModule]
+
 })
 export class AuthModule { }
