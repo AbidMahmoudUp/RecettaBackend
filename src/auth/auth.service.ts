@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { SignupDto } from './Dtos/Signup';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './Dtos/LoginDto';
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +12,10 @@ import { nanoid } from 'nanoid';
 import { ResetToken } from './schemas/reset-token.schemas';
 import { MailService } from './services/mail.service';
 import { GeneratedCode } from './schemas/code-generated.schemas';
+import { ObjectId } from "mongoose";
+import { UpdateIngredientDto } from 'src/ingrediant/dto/update-ingredient.dto';
+import { delay } from 'rxjs';
+
 
 @Injectable()
 export class AuthService {
@@ -26,8 +30,6 @@ export class AuthService {
 
 
     async signUp(signupData: SignupDto) {
-        signupData.email = signupData.email.trimEnd().trimStart()
-        signupData.email = signupData.email.toLowerCase()
         const { name, age, phone, email, password } = signupData;
 
         const emailInUse = await this.userModel.findOne({
@@ -39,7 +41,7 @@ export class AuthService {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        return  await this.userModel.create({
+        return await this.userModel.create({
             name,
             age,
             phone,
@@ -51,10 +53,7 @@ export class AuthService {
     }
 
     async login(loginCredentials: LoginDto) {
-        loginCredentials.email = loginCredentials.email.trimEnd().trimStart()
-        loginCredentials.email = loginCredentials.email.toLowerCase()
         const { email, password } = loginCredentials;
-        
         const user = await this.userModel.findOne({ email });
         if (!user) {
             throw new UnauthorizedException("Wrong credentials");
@@ -63,9 +62,6 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException("Wrong credentials");
         }
-        // generate Jwt token
-
-
 
         const tokens = await this.generateUserTokens(user._id);
         return {
@@ -85,6 +81,83 @@ export class AuthService {
             refreshToken,
         }
 
+    }
+
+    async DeleteUser(userId){
+        const user = await this.userModel.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return await this.userModel.deleteOne(user._id);
+
+    }
+
+
+    async getUserData(userId) {
+        const user = await this.userModel.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        //await delay(6000);
+        return {
+            name: user.name,
+            email: user.email,
+            age: user.age,
+            phone: user.phone,
+        };
+    }
+
+    async updateProfile(updateProfileData) {
+
+        const user = await this.userModel.findById(updateProfileData.userId);
+        let updateduser = {};
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const name = updateProfileData.name;
+        const age = updateProfileData.age;
+        const phone = updateProfileData.phone;
+        const email = updateProfileData.email;
+
+        if (email !== "") {
+            if (updateProfileData.email) {
+                const emailInUse = await this.userModel.findOne({
+                    email: updateProfileData.email,
+                });
+                if (emailInUse) {
+                    throw new BadRequestException('Email already in use');
+                }
+            }
+
+            updateduser = {
+                ...updateduser,
+                email
+            }
+        }
+        if (name !== "") {
+            updateduser = {
+                ...updateduser,
+                name,
+            }
+        }
+        if (age !== "") {
+            updateduser = {
+                ...updateduser,
+                age,
+            }
+        }
+        if (phone !== "") {
+            updateduser = {
+                ...updateduser,
+                phone,
+            }
+        }
+
+
+
+        return await this.userModel.findByIdAndUpdate(updateProfileData.userId, updateduser);
     }
 
     async storeRefreshToken(token: string, userId) {
@@ -121,7 +194,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
 
-        await user.save();
+        return await user.save();
 
 
     }
@@ -133,15 +206,15 @@ export class AuthService {
 
 
         if (user) {
-          //  const expiryDate = new Date();
-           // expiryDate.setHours(expiryDate.getMinutes() + 2);
+            //  const expiryDate = new Date();
+            // expiryDate.setHours(expiryDate.getMinutes() + 2);
 
             await this.generatedCode.findOneAndUpdate(
-                { userId: user._id }, 
+                { userId: user._id },
                 {
                     code: randomNumber,
                 },
-                { upsert: true, new: true } 
+                { upsert: true, new: true }
             );
             this.mailService.sendPasswordResetEmail(email, randomNumber.toString());
 
