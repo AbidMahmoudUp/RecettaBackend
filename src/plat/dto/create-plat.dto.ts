@@ -34,4 +34,6 @@ export class CreatePlatDto {
     @IsNotEmpty()
     ingredients: [{ingredient: Ingredient, qte : number}]
 
+    instructions : [string] 
+
 }

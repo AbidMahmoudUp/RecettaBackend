@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Inventory, inventoryDoc } from './entities/inventory.entity';
 import { Model } from 'mongoose';
 import { response } from 'express';
+import { Ingredient } from 'src/ingrediant/entities/ingredient.entity';
 
 @Injectable()
 export class InventoryService {
@@ -38,7 +39,7 @@ export class InventoryService {
 
   async updateByAddingIngredients(id: string,updateIngredientDto : UpdateInventoryDto)
   {
-      var inventory : Inventory = await this.model.findOne({"user": {$eq : id}}).populate("ingredients.ingredient")
+      let inventory : Inventory = await this.model.findOne({"user": {$eq : id}}).populate("ingredients.ingredient")
       if(!inventory)
       {
         return undefined
@@ -46,7 +47,7 @@ export class InventoryService {
 
       console.log(inventory)
       console.log(updateIngredientDto)
-      
+      let ingredientsToAdd : {ingredient: Ingredient, qte: number, date: string}[] = []
       updateIngredientDto.ingredients.forEach((ingredientUpdates) => {
         let index = inventory.ingredients.findIndex((ingredientInvetory) => {
           console.log(ingredientInvetory.ingredient._id.equals(ingredientUpdates.ingredient._id))
@@ -59,11 +60,13 @@ export class InventoryService {
         }
         else
         {
-          let object = {ingredient: ingredientUpdates.ingredient, qte: ingredientUpdates.qte, date: Date.now().toLocaleString()}
-          inventory.ingredients.push(object)
+          let object = {ingredient: ingredientUpdates.ingredient, qte: ingredientUpdates.qte, date: new Date().toLocaleString()}
+          ingredientsToAdd.push(object)
         }
       })
-
+      ingredientsToAdd.forEach(ingred => {
+        inventory.ingredients.push(ingred)
+      })
       return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true})
   }
 
@@ -76,22 +79,19 @@ export class InventoryService {
         throw new BadRequestException("WHERE IS YOUR INVENTORY")
       }
 
-      console.log(inventory)
-      console.log(updateIngredientDto)
+    
       
       updateIngredientDto.ingredients.forEach((ingredientUpdates) => {
         let index = inventory.ingredients.findIndex((ingredientInvetory) => {
-          console.log(ingredientInvetory.ingredient._id.equals(ingredientUpdates.ingredient._id))
           return ingredientInvetory.ingredient._id.equals(ingredientUpdates.ingredient._id)
         })
-        console.log(index)
         if(index != -1)
         {
           if(Number(inventory.ingredients.at(index).qte) >= ingredientUpdates.qte)
             inventory.ingredients.at(index).qte -= Number(ingredientUpdates.qte)
           else
           {
-            throw new BadRequestException("You don't have the quantity")
+            throw new BadRequestException("It seems like you don't have enough of one or more ingredients to proceed with this recipe. Please adjust your inventory and try again.")
           }
         }
         else
@@ -100,6 +100,6 @@ export class InventoryService {
         }
       })
 
-      return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true})
+      return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true}).populate("ingredients.ingredient");
   }
 }

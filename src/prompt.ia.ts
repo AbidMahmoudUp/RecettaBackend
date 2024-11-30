@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Ingredient } from "./ingrediant/entities/ingredient.entity";
 
 export class PromptDto
 {
@@ -7,5 +8,5 @@ export class PromptDto
         required: true,
         description: "Prompt for the ia"
     })
-    prompt: string
+    ingredients: [{ingredient: Ingredient, qte: number}]
 }
