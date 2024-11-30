@@ -14,6 +14,7 @@ export class Plat {
      @Prop()
      image: string
      @Prop()
+     
      category :string
      @Prop()
      cookingTime: string
@@ -29,6 +30,8 @@ export class Plat {
         },
       ])
       ingredients: [{ ingredient: Ingredient; qte: number }];
+      @Prop()
+      instractions : [string]
 }
 
 export const platSchema = SchemaFactory.createForClass(Plat)

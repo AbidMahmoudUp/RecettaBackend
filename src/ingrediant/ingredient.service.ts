@@ -4,6 +4,7 @@ import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ingredient, ingredientDoc } from './entities/ingredient.entity';
 import { Model, Types } from 'mongoose';
+import { console } from 'inspector';
 
 @Injectable()
 export class IngredientService {
@@ -22,7 +23,10 @@ export class IngredientService {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException(`Invalid ID format: ${id}`);
     }
-    const ingredient = await this.model.findById(new Types.ObjectId(id));
+
+    let ingredient = await this.model.findById(new Types.ObjectId(id));
+
+
     if (!ingredient) {
       throw new NotFoundException(`Ingredient with ID ${id} not found.`);
     }
