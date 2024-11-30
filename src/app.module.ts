@@ -14,6 +14,7 @@ import { JwtConfig } from './config/jwt.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { StableDiffusionAiModule } from './stable-diffusion-ai/stable-diffusion-ai.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { FileUploadModule } from './file-upload/file-upload.module';
       imports: [ConfigModule],
       useClass: MongodbConfigService,
     }),
-    FileUploadModule],
+    FileUploadModule,
+    StableDiffusionAiModule],
 
   controllers: [AppController],
   providers: [AppService],
