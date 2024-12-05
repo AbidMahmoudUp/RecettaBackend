@@ -44,7 +44,7 @@ export class StableDiffusionAiService {
         )
       );
     
-      const filePath = `${getDataFolderPath()}/${Date.now()}.png`;
+      const filePath = `assets/${Date.now()}.png`;
       await persistData(Buffer.from(result.data), filePath);
       console.log('Image saved at:', filePath);
       return filePath;

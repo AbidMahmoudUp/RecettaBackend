@@ -83,7 +83,7 @@ export class InventoryService {
       ingredientsToAdd.forEach(ingred => {
         inventory.ingredients.push(ingred)
       })
-      return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true})
+      return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true}).populate("ingredients.ingredient")
   }
 
 

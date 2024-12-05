@@ -15,6 +15,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { StableDiffusionAiModule } from './stable-diffusion-ai/stable-diffusion-ai.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import { StableDiffusionAiModule } from './stable-diffusion-ai/stable-diffusion-
       useClass: MongodbConfigService,
     }),
     FileUploadModule,
-    StableDiffusionAiModule],
+    StableDiffusionAiModule,HttpModule],
 
   controllers: [AppController],
   providers: [AppService],
