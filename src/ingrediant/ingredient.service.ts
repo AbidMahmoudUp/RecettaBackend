@@ -53,4 +53,6 @@ export class IngredientService {
       console.log(ingredient.image)
       return ingredient.save();
   }
+
+
 }

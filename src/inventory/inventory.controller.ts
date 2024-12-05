@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 export class PromptTest
@@ -80,11 +81,12 @@ export class InventoryController {
 
 
 
-  @Post("/imageTest")
-  async getImage(@Body()promptTest: PromptTest)
+  @Post("/updateInventoryWithImage/:id")
+  @UseInterceptors(FileInterceptor('file'))
+  async getImage(@Param('id') id : string,@UploadedFile()promptTest: Express.Multer.File)
   {
-    console.log(promptTest.pathImage)
-    return await response.sendFile(promptTest.pathImage)
+    console.log(promptTest)
+    return await this.inventoryService.ingredientsDetectionTest(id, promptTest)
   }
 }
 
