@@ -36,6 +36,7 @@ export class AppService {
       jsonResponse.at(index).image = path.slice(path.indexOf('/'))
     }
     //jsonResponse[0].image = "1733405720312.png"
+    
     return jsonResponse
   }
 

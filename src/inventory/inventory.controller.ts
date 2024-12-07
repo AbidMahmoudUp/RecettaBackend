@@ -5,6 +5,7 @@ import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Types } from 'mongoose';
 
 
 export class PromptTest
@@ -69,7 +70,9 @@ export class InventoryController {
   @Patch("/addIngredients/:id")
   async addIngredientsToInventory(@Param('id') id : string,@Body()updateInventoryDto : UpdateInventoryDto)
   {
-    return await this.inventoryService.updateByAddingIngredients(id, updateInventoryDto)
+    const objectId = new Types.ObjectId(id);
+
+    return await this.inventoryService.updateByAddingIngredients(objectId, updateInventoryDto)
   }
 
   @Patch("/substractIngredients/:id")

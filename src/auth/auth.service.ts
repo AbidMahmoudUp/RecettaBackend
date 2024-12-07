@@ -15,6 +15,8 @@ import { GeneratedCode } from './schemas/code-generated.schemas';
 import { ObjectId } from "mongoose";
 import { UpdateIngredientDto } from 'src/ingrediant/dto/update-ingredient.dto';
 import { delay } from 'rxjs';
+import { InventoryService } from 'src/inventory/inventory.service';
+import { CreateInventoryDto } from 'src/inventory/dto/create-inventory.dto';
 
 
 @Injectable()
@@ -24,7 +26,8 @@ export class AuthService {
         @InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshToken>,
         @InjectModel(GeneratedCode.name) private generatedCode: Model<GeneratedCode>,
         private jwtService: JwtService,
-        private mailService: MailService) {
+        private mailService: MailService,
+    private inventoryService: InventoryService) {
 
     }
 
@@ -40,8 +43,8 @@ export class AuthService {
             throw new BadRequestException('Email already in use');
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        return await this.userModel.create({
+        
+        let user : User = await this.userModel.create({
             name,
             age,
             phone,
@@ -49,6 +52,13 @@ export class AuthService {
             password: hashedPassword
 
         });
+
+        let inventory = new CreateInventoryDto()
+        inventory.user = user
+        
+        await this.inventoryService.create(inventory)
+
+        return user
 
     }
 

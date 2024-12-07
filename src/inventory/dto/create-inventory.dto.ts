@@ -9,13 +9,14 @@ export class CreateInventoryDto {
         example: "ObjectId",
         required: true
     })
+    @IsNotEmpty()
     user :User
 
     @ApiProperty({
         example: "[{ingredient: ObjectId, qte : 10}]",
         required: true
     })
-    @IsNotEmpty()
+    //@IsNotEmpty()
     ingredients: [{ingredient: Ingredient, qte : number}]
 
 

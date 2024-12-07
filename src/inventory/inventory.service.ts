@@ -3,7 +3,7 @@ import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Inventory } from './entities/inventory.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { Ingredient } from 'src/ingrediant/entities/ingredient.entity';
 import { ConfigService } from '@nestjs/config';
@@ -53,38 +53,56 @@ export class InventoryService {
     return await this.model.findByIdAndDelete(id)
   }
 
-  async updateByAddingIngredients(id: string,updateIngredientDto : UpdateInventoryDto)
-  {
-      let inventory : Inventory = await this.model.findOne({"user": {$eq : id}}).populate("ingredients.ingredient")
-      if(!inventory)
-      {
-        return undefined
-      }
+  async updateByAddingIngredients(id: Types.ObjectId, updateIngredientDto: UpdateInventoryDto) {
+  let inventory: Inventory = await this.model
+    .findOne({ "user": { $eq: id } })
+    .populate("ingredients.ingredient");
 
-      console.log(inventory)
-      console.log(updateIngredientDto)
-      let ingredientsToAdd : {ingredient: Ingredient, qte: number, date: string}[] = []
-      updateIngredientDto.ingredients.forEach((ingredientUpdates) => {
-        let index = inventory.ingredients.findIndex((ingredientInvetory) => {
-          console.log(ingredientInvetory.ingredient._id.equals(ingredientUpdates.ingredient._id))
-          return ingredientInvetory.ingredient._id.equals(ingredientUpdates.ingredient._id)
-        })
-        console.log(index)
-        if(index != -1)
-        {
-          inventory.ingredients.at(index).qte += Number(ingredientUpdates.qte)
-        }
-        else
-        {
-          let object = {ingredient: ingredientUpdates.ingredient, qte: ingredientUpdates.qte, date: new Date().toLocaleString()}
-          ingredientsToAdd.push(object)
-        }
-      })
-      ingredientsToAdd.forEach(ingred => {
-        inventory.ingredients.push(ingred)
-      })
-      return this.model.findOneAndUpdate({user : inventory.user}, inventory, {new : true}).populate("ingredients.ingredient")
+  if (!inventory) {
+    return undefined;
   }
+
+  console.log(inventory);
+  console.log(updateIngredientDto);
+
+  let ingredientsToAdd: { ingredient: Ingredient, qte: number, date: string }[] = [];
+
+  updateIngredientDto.ingredients.forEach((ingredientUpdates) => {
+    if (ingredientUpdates.ingredient && ingredientUpdates.ingredient._id) {
+      let index = inventory.ingredients.findIndex((ingredientInventory) => {
+        if (ingredientInventory.ingredient && ingredientInventory.ingredient._id) {
+          console.log(ingredientInventory.ingredient._id.equals(ingredientUpdates.ingredient._id));
+          return ingredientInventory.ingredient._id.equals(ingredientUpdates.ingredient._id);
+        }
+        console.log("Ingredient in inventory is null or invalid:", ingredientInventory.ingredient);
+        return false;  // Avoid null access error
+      });
+
+      console.log(index);
+      if (index != -1) {
+        inventory.ingredients.at(index).qte += Number(ingredientUpdates.qte);
+      } else {
+        let object = {
+          ingredient: ingredientUpdates.ingredient,
+          qte: ingredientUpdates.qte,
+          date: new Date().toLocaleString(),
+        };
+        ingredientsToAdd.push(object);
+      }
+    } else {
+      console.log("Invalid ingredient in update:", ingredientUpdates);
+    }
+  });
+
+  ingredientsToAdd.forEach(ingred => {
+    inventory.ingredients.push(ingred);
+  });
+
+  return this.model
+    .findOneAndUpdate({ user: inventory.user }, inventory, { new: true })
+    .populate("ingredients.ingredient");
+}
+
 
 
   async updateByMakingRecipes(id: string,updateIngredientDto : UpdateInventoryDto)
