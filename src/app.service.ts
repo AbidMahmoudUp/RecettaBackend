@@ -4,13 +4,53 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { persistData } from './utils/file.utils';
+import { Plat } from './plat/entities/plat.entity';
+import { IngredientService } from './ingrediant/ingredient.service';
+import { Ingredient } from './ingrediant/entities/ingredient.entity';
+
+const preprompt = `Generate a JSON recipe using this schema:Recipe Schema
+  {
+  "title": "string",
+  "description": "string",
+  "image": "string",
+  "category": "string",
+  "cookingTime": "string",
+  "energy": "string",
+  "rating": "string",
+  "ingredients": [{ "ingredient": "Ingredient", "qte": "int" }],
+  "instructions": ["string"]
+}
+Use the provided ingredients array.
+Include realistic values for cookingTime (minutes), energy (kcal), and rating (1-5).
+Add at least three clear instructions steps or more if needed.
+{ "_id": "1", "name": "Tomato", "categorie": "Vegetable", "unit": "piece", "image": "https://example.com/tomato.jpg" }
+Generate a recipe referencing these ingredients while knowing that the _id of the ingredient is an object id sent with it so keep it as it is.
+`
+const promptOfRecipe = `Generate a valid JSON RESPONSE ONLY recipe from the image using this schema:Recipe Schema
+  {
+  "title": "string",
+  "description": "string",
+  "image": "string",
+  "category": "string",
+  "cookingTime": "int",
+  "energy": "int",
+  "rating": "int",
+  "ingredients": [{"name" : "string", "qte": "int", "unit" : "string"}],
+  "instructions": ["string"]
+}
+Include realistic values for cookingTime (minutes), energy (kcal), and rating (1-5).
+Add at least three clear instructions steps or more if needed.
+Generate a recipe with name of the ingredient in SINGULAR needed with their quantity and the quantity must be an INTEGER DON'T USE FLOATS.
+`
+
+
 
 
 @Injectable()
 export class AppService {
   private genAI : any
   private genAIFlashModel : any
-  constructor(private readonly config: ConfigService,private readonly httpService: HttpService)
+  constructor(private readonly config: ConfigService,private readonly httpService: HttpService, private readonly ingredientService : IngredientService)
   {
      this.genAI = new GoogleGenerativeAI(this.config.get("API_KEY"))
     this.genAIFlashModel = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
@@ -19,16 +59,18 @@ export class AppService {
 
   async getPromptResponse(prompt : string)
   { 
-    const result = await this.genAIFlashModel.generateContent(prompt)
+    let finalPrompt = preprompt + prompt;
+
+    const result = await this.genAIFlashModel.generateContent(finalPrompt)
     const response = await result.response
     const text : string =response.text()
     let jsonText = text.slice(7)
     jsonText = jsonText.slice(0,jsonText.indexOf("```"))
-    //.log(jsonText)
+    console.log(jsonText)
     //console.log(text)
     const jsonResponse = <any[]>JSON.parse(jsonText)
     console.log(jsonResponse)
-    for(var index = 0; index < jsonResponse.length; index++)
+   /* for(var index = 0; index < jsonResponse.length; index++)
     {
       console.log(jsonResponse.at(index).title)
       //console.log(json)
@@ -36,10 +78,56 @@ export class AppService {
       jsonResponse.at(index).image = path.slice(path.indexOf('/'))
     }
     //jsonResponse[0].image = "1733405720312.png"
-    
+    */
     return jsonResponse
   }
-
+  async generateRecipeFromPlat(file: Express.Multer.File)
+  { 
+    const image = {
+      inlineData: {
+        data: Buffer.from(file.buffer).toString("base64"),
+        mimeType: "image/png",
+      },
+    };
+    const result = await this.genAIFlashModel.generateContent([promptOfRecipe,image])
+    const response = await result.response
+    const text : string =response.text()
+    let jsonText = text.slice(7)
+    jsonText = jsonText.slice(0,jsonText.indexOf("```"))
+    //.log(jsonText)
+    console.log(jsonText)
+    const jsonResponse = JSON.parse(jsonText)
+    //console.log(jsonResponse)
+    let recipe : Plat = new Plat()
+      const jsonIngredients = <any[]>jsonResponse.ingredients
+      console.log(jsonIngredients)
+      for(var j = 0; j < jsonIngredients.length; j++)
+      {
+        let ingredient = await this.ingredientService.findOneByName(jsonIngredients.at(j).name)
+        if(ingredient != null)
+        {
+          let object : {ingredient : Ingredient, qte : number} = {ingredient : new Ingredient(), qte : 0}
+          object.ingredient = ingredient
+          object.qte = jsonIngredients.at(j).qte
+          console.log(recipe.ingredients.length)
+          recipe.ingredients.push(object)
+        }
+      }
+      //console.log(json)
+      //let path = await this.generateImage(jsonResponse.at(index).title)
+      //jsonResponse.at(index).image = path.slice(path.indexOf('/'))
+    
+    //jsonResponse[0].image = "1733405720312.png"
+    recipe.title = jsonResponse.title
+    recipe.category = jsonResponse.category
+    recipe.cookingTime = jsonResponse.cookingTime
+    recipe.description = jsonResponse.description
+    recipe.energy = jsonResponse.energy
+    recipe.image = ""
+    recipe.instructions = <string[]> jsonResponse.instructions
+    recipe.rating = jsonResponse.rating
+    return recipe
+  }
 
 
   async generateImage(generatedImage: string) {

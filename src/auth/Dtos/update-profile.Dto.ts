@@ -1,10 +1,13 @@
-import {IsNotEmpty } from "class-validator";
-import { ObjectId } from "mongoose";
+import {IsNotEmpty, IsOptional } from "class-validator";
+import {  Types } from "mongoose";
 import { SignupDto } from "./Signup";
 import { PartialType } from "@nestjs/mapped-types";
 
 export class updateProfileDto extends PartialType(SignupDto) {
    
     @IsNotEmpty()
-    userId: ObjectId;
+    userId: Types.ObjectId;
+
+    @IsOptional()
+    profileImage: string;
 }

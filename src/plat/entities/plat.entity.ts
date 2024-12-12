@@ -22,16 +22,29 @@ export class Plat {
      energy: string
      @Prop()
      rating : string
-     @Prop([
+@Prop([
         {
           ingredient: { type: mongoose.Schema.Types.ObjectId, ref: "Ingredient" },
           qte: { type: Number, required: true },
           _id: false,
         },
       ])
-      ingredients: [{ ingredient: Ingredient; qte: number }];
+      ingredients: { ingredient: Ingredient; qte: number }[];
       @Prop()
-      instractions : [string]
+      instructions :string[]
+    
+
+      constructor() {
+        this.title = "";
+        this.description = "";
+        this.image = "";
+        this.category = "";
+        this.cookingTime = "";
+        this.energy = "";
+        this.rating = "";
+        this.ingredients = [];
+        this.instructions = [];
+      }
 }
 
 export const platSchema = SchemaFactory.createForClass(Plat)

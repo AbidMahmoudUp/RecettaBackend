@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PromptDto } from './prompt.ia';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 const prePrompt = "JSON RESPONSE ONLY: as for the schema i want the response as this example\n [{\"title\": \"name\", \"description\" : \"description\", image: \"Please provide an url of image from google\", \"category\": \"category\", \"cookingTime\": \"time in minutes\", \"energy\": \"calories\", \"rating\": \"average rating for this recipe\", \"ingredients\" : [{ \"ingredient\":{ this body is based on the ingredients sent }, \"qte\": \"QUANTITY NEEDED OF THE INGREDIENT FOR THE RECIPE (can be modified based on the recipe)\"}], \"instructions\": [ array of strings for the steps ]  }, etc...] for recipes using ONLY these ingredients that I SENT "
 
@@ -10,7 +11,12 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   
-
+  @Post('api/generative-ia-recipe')
+  @UseInterceptors(FileInterceptor('file'))
+  async generateRecipe(@UploadedFile()file: Express.Multer.File)
+  {
+    return await this.appService.generateRecipeFromPlat(file)
+  }
   
   @ApiResponse({ status: 200})
     @ApiResponse({ status: 404, description: 'Invalid token'})

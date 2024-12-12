@@ -16,6 +16,7 @@ import { join } from 'path';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { StableDiffusionAiModule } from './stable-diffusion-ai/stable-diffusion-ai.module';
 import { HttpModule } from '@nestjs/axios';
+import { IngredientService } from './ingrediant/ingredient.service';
 
 @Module({
   imports: [
@@ -46,6 +47,6 @@ import { HttpModule } from '@nestjs/axios';
     StableDiffusionAiModule,HttpModule],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,IngredientService],
 })
 export class AppModule { }

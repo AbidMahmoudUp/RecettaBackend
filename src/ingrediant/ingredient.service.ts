@@ -14,6 +14,7 @@ export class IngredientService {
   async create(createIngredientDto: CreateIngredientDto) {
     return await this.model.create(createIngredientDto);
   }
+  
 
   async findAll() {
     return await this.model.find()
@@ -52,6 +53,11 @@ export class IngredientService {
       console.log(imagePath)
       console.log(ingredient.image)
       return ingredient.save();
+  }
+
+  async findOneByName(name: string)
+  {
+    return await this.model.findOne({"name" : {'$regex': `^${name}$`, $options: 'i'}});
   }
 
 

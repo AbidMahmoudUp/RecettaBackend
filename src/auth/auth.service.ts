@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { SignupDto } from './Dtos/Signup';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './Dtos/LoginDto';
 import { JwtService } from '@nestjs/jwt';
@@ -15,8 +15,8 @@ import { GeneratedCode } from './schemas/code-generated.schemas';
 import { ObjectId } from "mongoose";
 import { UpdateIngredientDto } from 'src/ingrediant/dto/update-ingredient.dto';
 import { delay } from 'rxjs';
-import { InventoryService } from 'src/inventory/inventory.service';
-import { CreateInventoryDto } from 'src/inventory/dto/create-inventory.dto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 
 @Injectable()
@@ -26,9 +26,16 @@ export class AuthService {
         @InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshToken>,
         @InjectModel(GeneratedCode.name) private generatedCode: Model<GeneratedCode>,
         private jwtService: JwtService,
-        private mailService: MailService,
-    private inventoryService: InventoryService) {
+        private mailService: MailService) {
 
+    }
+
+
+    async getAllUsers() {
+
+        const  users: User[]= await this.userModel.find();
+        
+        return users
     }
 
 
@@ -43,8 +50,8 @@ export class AuthService {
             throw new BadRequestException('Email already in use');
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        let user : User = await this.userModel.create({
+
+        return await this.userModel.create({
             name,
             age,
             phone,
@@ -52,13 +59,6 @@ export class AuthService {
             password: hashedPassword
 
         });
-
-        let inventory = new CreateInventoryDto()
-        inventory.user = user
-        
-        await this.inventoryService.create(inventory)
-
-        return user
 
     }
 
@@ -72,12 +72,14 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException("Wrong credentials");
         }
+        if (user.banned) {
+            throw new UnauthorizedException("your account is banned");
+        }
 
         const tokens = await this.generateUserTokens(user._id);
         return {
             ...tokens,
             userId: user.id,
-
         };
     }
 
@@ -130,15 +132,13 @@ export class AuthService {
         const age = updateProfileData.age;
         const phone = updateProfileData.phone;
         const email = updateProfileData.email;
-
+        const profile = updateProfileData.profileImage;
         if (email !== "") {
-            if (updateProfileData.email) {
+            if (updateProfileData.email !== user.email) {
                 const emailInUse = await this.userModel.findOne({
                     email: updateProfileData.email,
                 });
-                if (emailInUse) {
-                    throw new BadRequestException('Email already in use');
-                }
+                
             }
 
             updateduser = {
@@ -164,11 +164,51 @@ export class AuthService {
                 phone,
             }
         }
+        
+        if (profile !== "") {
+            updateduser = {
+                ...updateduser,
+                profileImage: profile,
+            }
+        }
 
 
 
         return await this.userModel.findByIdAndUpdate(updateProfileData.userId, updateduser);
     }
+
+
+    async getUserProfileImage(userId: string): Promise<string> {
+        const objectId = new Types.ObjectId(userId);  // Ensure userId is an ObjectId
+    
+        const user = await this.userModel.findById(objectId);  // Find the user by ID
+    
+        if (!user) {
+          throw new Error('User not found');
+        }
+    
+        if (user.profileImage) {
+          // Debugging: Log to check if profileImage exists
+          console.log('Profile Image:', user.profileImage);
+    
+          // Resolve the path for the image
+          const imagePath = path.resolve(__dirname, '..', '..', 'uploads', user.profileImage);
+
+          
+          // Debugging: Log the resolved image path
+          console.log('Resolved Image Path:', imagePath);
+    
+          // Check if the file exists at the resolved path
+          if (fs.existsSync(imagePath)) {
+            return imagePath;
+          } else {
+            throw new Error('Profile image not found');
+          }
+        } else {
+           return path.resolve(__dirname, '..', '..', 'uploads','blank_profile_pic.jpg');
+        }
+      }
+    
 
     async storeRefreshToken(token: string, userId) {
         const expiryDate = new Date()
