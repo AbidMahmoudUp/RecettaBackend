@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -11,6 +11,8 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schemas';
 import { MailService } from './services/mail.service';
 import { GeneratedCode, generatedCodeSchema } from './schemas/code-generated.schemas';
+import { InventoryService } from 'src/inventory/inventory.service';
+import { InventoryModule } from 'src/inventory/inventory.module';
 
 @Module({
   imports: [MongooseModule.forFeature([{
@@ -31,6 +33,7 @@ import { GeneratedCode, generatedCodeSchema } from './schemas/code-generated.sch
   }
   
   ]),
+  (forwardRef(() =>InventoryModule))
 
 
   ],

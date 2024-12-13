@@ -12,9 +12,10 @@ export class AppController {
 
   
   @Post('api/generative-ia-recipe')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('fileImage'))
   async generateRecipe(@UploadedFile()file: Express.Multer.File)
   {
+    console.log("WE ARE HITTING THE ENDPOINT")
     return await this.appService.generateRecipeFromPlat(file)
   }
   

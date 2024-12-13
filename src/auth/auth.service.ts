@@ -17,6 +17,8 @@ import { UpdateIngredientDto } from 'src/ingrediant/dto/update-ingredient.dto';
 import { delay } from 'rxjs';
 import * as path from 'path';
 import * as fs from 'fs';
+import { InventoryService } from 'src/inventory/inventory.service';
+import { CreateInventoryDto } from 'src/inventory/dto/create-inventory.dto';
 
 
 @Injectable()
@@ -26,7 +28,8 @@ export class AuthService {
         @InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshToken>,
         @InjectModel(GeneratedCode.name) private generatedCode: Model<GeneratedCode>,
         private jwtService: JwtService,
-        private mailService: MailService) {
+        private mailService: MailService,
+    private inventoryService : InventoryService) {
 
     }
 
@@ -51,15 +54,21 @@ export class AuthService {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        return await this.userModel.create({
+        let user =  await this.userModel.create({
             name,
-            age,
+            age : 0,
             phone,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            profileImage : "blank_profile_pic.jpg",
 
         });
 
+        let inventory = new CreateInventoryDto()
+        inventory.user = user
+        
+        await this.inventoryService.create(inventory)
+        return user
     }
 
     async login(loginCredentials: LoginDto) {
@@ -117,6 +126,7 @@ export class AuthService {
             email: user.email,
             age: user.age,
             phone: user.phone,
+            profileImage: user.profileImage
         };
     }
 
@@ -192,7 +202,7 @@ export class AuthService {
           console.log('Profile Image:', user.profileImage);
     
           // Resolve the path for the image
-          const imagePath = path.resolve(__dirname, '..', '..', 'uploads', user.profileImage);
+          const imagePath = path.resolve(__dirname, '..', '..', 'assets', user.profileImage);
 
           
           // Debugging: Log the resolved image path
@@ -205,7 +215,7 @@ export class AuthService {
             throw new Error('Profile image not found');
           }
         } else {
-           return path.resolve(__dirname, '..', '..', 'uploads','blank_profile_pic.jpg');
+           return path.resolve(__dirname, '..', '..', 'assets','blank_profile_pic.jpg');
         }
       }
     
