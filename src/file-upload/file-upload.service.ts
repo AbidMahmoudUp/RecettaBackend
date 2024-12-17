@@ -41,7 +41,15 @@ export class FileUploadService {
     }
     else
     {
-      entityDocument = await model.findOne({"name" : {'$regex': `^${id}$`, $options: 'i'}})
+      switch(entity)
+      {
+        case "Ingredient":
+          entityDocument = await model.findOne({"name" : {'$regex': `^${id}$`, $options: 'i'}})
+          break
+        case "Plat":
+          entityDocument = await model.findOne({"title" : {'$regex': `^${id}$`, $options: 'i'}})
+          break
+      }
     }
     if (!entityDocument) {
       throw new NotFoundException(`${entity} with ID ${id} not found.`);
