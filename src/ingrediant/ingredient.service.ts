@@ -12,9 +12,16 @@ export class IngredientService {
   @InjectModel(Ingredient.name) private model = Model<ingredientDoc>
 
   async create(createIngredientDto: CreateIngredientDto) {
+    if(createIngredientDto._id.length == 0)
+      createIngredientDto._id = null
     return await this.model.create(createIngredientDto);
   }
-  
+
+
+  async createWithImage(createIngredientDto: CreateIngredientDto, file: Express.Multer.File) {
+    createIngredientDto.image = file.filename
+    return await this.model.create(createIngredientDto);
+  }
 
   async findAll() {
     return await this.model.find()
@@ -32,6 +39,11 @@ export class IngredientService {
       throw new NotFoundException(`Ingredient with ID ${id} not found.`);
     }
     return ingredient;
+  }
+
+  async findOneByName(name: string)
+  {
+    return await this.model.findOne({"name" : {'$regex': `^${name}$`, $options: 'i'}})
   }
 
   async update(id: string, updateIngredientDto: UpdateIngredientDto) {
@@ -55,10 +67,6 @@ export class IngredientService {
       return ingredient.save();
   }
 
-  async findOneByName(name: string)
-  {
-    return await this.model.findOne({"name" : {'$regex': `^${name}$`, $options: 'i'}});
-  }
 
 
 }

@@ -3,7 +3,6 @@ import { IngredientService } from './ingredient.service';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { Ingredient } from './entities/ingredient.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 
@@ -21,6 +20,25 @@ export class IngredientController {
   async create(@Body() createingredientDto: CreateIngredientDto) {
     return await this.ingredientService.create(createingredientDto);
   }
+
+  @Post("/addWithImage")
+  @UseInterceptors(FileInterceptor('file',{
+    storage: diskStorage({
+      destination:'./assets',
+      filename:(req,file,callback) =>
+      {
+        const uniqueName = Date.now()+ '+' + Math.round(Math.random() *1e9)
+        const extentionfile = file.originalname.split('.').pop()
+        const filename = `${file.fieldname}-${uniqueName}.${extentionfile}`
+        callback(null,filename)
+      },
+
+    }),
+  }),
+)
+async addIngredientWithImage(@Body() createingredientDto: CreateIngredientDto, @UploadedFile() file: Express.Multer.File) {
+  return await this.ingredientService.createWithImage(createingredientDto, file);
+}
 
   @ApiResponse({ status: 200})
   @ApiResponse({ status: 403, description: 'Unauthorized'})

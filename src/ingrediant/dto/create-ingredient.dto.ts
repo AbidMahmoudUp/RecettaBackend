@@ -3,6 +3,9 @@ import { IsNotEmpty, IsString } from "class-validator"
 
 export class CreateIngredientDto {
 
+    @IsString()
+    _id : string
+
     @ApiProperty({
         example: "Pepper",
         required: true
@@ -16,7 +19,7 @@ export class CreateIngredientDto {
         example: "https://test.com/img",
         required: true
     })
-    @IsNotEmpty()
+    //@IsNotEmpty()
     image : string
 
 

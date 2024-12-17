@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFileUploadDto } from './dto/create-file-upload.dto';
 import { UpdateFileUploadDto } from './dto/update-file-upload.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { Ingredient, ingredientDoc } from 'src/ingrediant/entities/ingredient.entity';
 import { platDoc } from 'src/plat/entities/plat.entity';
 import { User } from 'src/auth/schemas/user.schema';
@@ -33,7 +33,16 @@ export class FileUploadService {
         throw new NotFoundException(`Entity ${entity} not found.`);
     }
     
-    const entityDocument = await model.findById(new Types.ObjectId(id));
+    let isObjectId = isValidObjectId(id);
+    let entityDocument;
+    if(isObjectId)
+    {
+      entityDocument = await model.findById(new Types.ObjectId(id));
+    }
+    else
+    {
+      entityDocument = await model.findOne({"name" : {'$regex': `^${id}$`, $options: 'i'}})
+    }
     if (!entityDocument) {
       throw new NotFoundException(`${entity} with ID ${id} not found.`);
     }
